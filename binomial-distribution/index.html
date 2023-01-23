@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+    <meta content="utf-8" http-equiv="encoding">
+    <title>Binomial Distribution Interactive</title>
+
+    <script src="./index.js"></script>
+    <link rel="stylesheet" href="./index.css" type="text/css">
+  </head>
+  <body>
+    <div class="uiContainer">
+      <div>
+        <label for="n">Number of flips per trial (n):</label>
+        <input type="number" id="n" name="n" min="1" max="1000000" step="1" value="7" placeholder="Integer" list="suggestedN" required>
+        <datalist id="suggestedN">
+          <option value="2"></option>
+          <option value="5"></option>
+          <option value="10"></option>
+          <option value="30"></option>
+          <option value="100"></option>
+          <option value="1000"></option>
+          <option value="10000"></option>
+        </datalist>
+      </div>
+      <div>
+        <label for="p">Probability Heads (p):</label>
+        <input type="number" id="p" name="p" min="0" max="1" step="0.001" value="0.3" placeholder="Number [0, 1]" list="suggestedP" required>
+        <datalist id="suggestedP">
+          <option value="0.1"></option>
+          <option value="0.3"></option>
+          <option value="0.5"></option>
+          <option value="0.7"></option>
+          <option value="0.9"></option>
+        </datalist>
+      </div>
+      <div>
+        <button id="flipCoin" type="button">
+            Flip Coin
+        </button>
+        <button id="play" type="button">
+            Play
+        </button>
+        <select name="speed" id="speed" type="select">
+            <option value="1">1 trial/s</option>
+            <option value="5">5 t/s</option>
+            <option value="100">100 t/s</option>
+            <option value="1000">1000 t/s</option>
+            <option value="5000">5000 t/s</option>
+        </select>
+        <button id="reset" type="button">
+            Reset
+        </button>
+      </div>
+    </div>
+    <div class="canvasContainer">
+      <div class="subContainer">
+        <canvas id="canvas" />
+      </div>
+    </div>
+  </body>
+</html>

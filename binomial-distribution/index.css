@@ -1,0 +1,44 @@
+body {
+	margin: 0;
+}
+
+.canvasContainer {
+	display: flex;
+	justify-content: center;
+	height: 100%;
+	width: 100%;
+}
+
+.uiContainer {
+	padding: 1em;
+	font-size: 24px;
+	display: flex;
+}
+
+.uiContainer div {
+	padding: 1em;
+}
+
+.uiContainer button, select {
+	font-size: 1rem;
+	text-align: center;
+}
+
+.uiContainer #play {
+	width: 4rem;
+}
+
+.uiContainer input {
+	padding: 4px;
+}
+
+.uiContainer input:invalid {
+	background-color: ivory;
+	border: none;
+	outline: 2px solid red;
+}
+
+.subContainer {
+	align-items: center;
+	display: flex;
+}
