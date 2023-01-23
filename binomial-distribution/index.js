@@ -189,6 +189,8 @@ const drawWorld = () => {
     ctx.fillStyle = '#000';
     ctx.fillText('Coin Flip History:', 4, 12);
     ctx.moveTo(4, 26);
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = 'black';
     ctx.lineTo(200, 26);
     ctx.stroke();
     flips.forEach((_, i) => drawFlipRow(i));
