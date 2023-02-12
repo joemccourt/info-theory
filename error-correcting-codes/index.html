@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+    <meta content="utf-8" http-equiv="encoding">
+    <title>Error Correcting Codes</title>
+
+    <script src="./index.js"></script>
+    <link rel="stylesheet" href="./index.css" type="text/css">
+  </head>
+  <body>
+    <div class="canvasContainer">
+      <div class="subContainer">
+        <img src="./road-small.jpg" id="road" width="411" height="640"/>
+      </div>
+      <div class="subContainer">
+        <table id="inspector"> </table>
+      </div>
+      <div class="subContainer">
+        <canvas id="canvas" width="411" height="640">
+      </div>
+    </div>
+    <div class="uiContainer">
+      <div>
+        <label for="f">Bit flip probability percent (f)</label>
+        <input type="number" id="f" name="f" min="0" max="100" step="0.01" value="7" required size="5">
+      </div>
+      <div>
+        <select name="correcting-code" id="correcting-code" type="select">
+            <option value="0">No Code (1x)</option>
+            <option value="1">Repetition 3 (3x)</option>
+            <option value="2">Repetition 5 (5x)</option>
+            <option value="3">Repetition 7 (7x)</option>
+            <option value="4">Repetition 9 (9x)</option>
+            <option value="5">Hamming 7,4 (1.75x)</option>
+        </select>
+        <button id="transmit" type="button">
+            Transmit
+        </button>
+      </div>
+    </div>
+  </body>
+</html>
