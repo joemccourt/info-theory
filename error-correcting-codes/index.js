@@ -103,6 +103,7 @@ const runBinarySymmetricChannel = (sourceData, encoder, decoder) => {
 };
 
 const onTransmit = () => {
+    resetState();
     const { ctx, canvas, code } = state;
     const img = document.getElementById('road');
     ctx.drawImage(img, 0, 0);
@@ -299,8 +300,8 @@ const init = () => {
     const transmitButton = document.getElementById('transmit');
     transmitButton.addEventListener('click', onTransmit);
 
-    const correctingCode = document.getElementById('correcting-code');
-    correctingCode.addEventListener('click', setCorrectingCode);
+    // const correctingCode = document.getElementById('correcting-code');
+    // correctingCode.addEventListener('click', setCorrectingCode);
 
     const fInput = document.getElementById('f');
     fInput.addEventListener('change', () => resetState());
