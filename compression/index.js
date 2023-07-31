@@ -222,22 +222,28 @@ const verifyComp = () => {
 };
 
 const appendTable = (parentDiv) => {
-    const { cMetaBlocks, compressedInfo } = state;
+    const { cMetaBlocks } = state;
 
     const compressedInfoTable = document.createElement("table");
+    const tableHead = document.createElement("thead");
+    const tableBody = document.createElement("tbody");
 
-    const appendRow = (colText, className = '') => {
+    const appendRow = (colText, isHeader = false) => {
         const row = document.createElement("tr");
         colText.forEach(c => {
             const col = document.createElement("td");
             col.innerHTML = c;
             row.appendChild(col);
         });
-        compressedInfoTable.appendChild(row);
+        if (isHeader) {
+            tableHead.appendChild(row);
+        } else {
+            tableBody.appendChild(row);
+        }
     };
 
     // header
-    appendRow(['start', 'delta', 'preamble', 'encoding'], 'header');
+    appendRow(['start', 'delta', 'preamble', 'encoding'], true);
 
     cMetaBlocks.slice(0, 10).forEach(block => {
         const binString = block.delta.toString(2);
@@ -245,6 +251,9 @@ const appendTable = (parentDiv) => {
         const preamble = new Array(bin.length).fill(0).join('');
         appendRow([intFormat(block.start), intFormat(block.delta), preamble, bin]);
     });
+
+    compressedInfoTable.appendChild(tableHead);
+    compressedInfoTable.appendChild(tableBody);
     parentDiv.appendChild(compressedInfoTable);
 };
 
@@ -286,17 +295,14 @@ const onRun = () => {
 }
 
 const onMove = (e) => {
-    const {top, left} = e.target.getBoundingClientRect();
+    const { top, left } = e.target.getBoundingClientRect();
     const x = Math.round(e.clientX - left);
     const y = Math.round(e.clientY - top);
 
     // todo
 };
 
-const BG_COLOR = 'rgb(231, 255, 252)';
 const init = () => {
-    document.body.style.background = BG_COLOR;
-
     // init state
     resetState();
 
@@ -310,6 +316,7 @@ const init = () => {
     const nInput = document.getElementById('n');
     nInput.addEventListener('change', () => resetState());
 
+    // todo add hover interactions
     // document.getElementById('canvas').addEventListener('mousemove', onMove);
 };
 

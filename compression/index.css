@@ -1,62 +1,91 @@
 body {
-	margin: 0;
+    margin: 0;
+    background: linear-gradient(70deg, rgb(197, 255, 217), #bffcffde);
 }
 
 canvas {
-	image-rendering: pixelated;
-	border: 1px solid steelblue;
-	margin: 0.5em;
+    image-rendering: pixelated;
+    border: 1px solid steelblue;
+    margin: 0.5em;
 }
 
 .canvasContainer {
-	display: flex;
-	justify-content: space-between;
+    display: flex;
+    justify-content: space-between;
 }
 
 .subContainer {
-	align-content: baseline;
-	display: flex;
-	justify-content: center;
-	flex-wrap: wrap;
+    align-content: baseline;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
 }
 
 .signalInfo {
-	width: 100%;
-	text-align: center;
-	font-size: 18px;
+    width: 100%;
+    text-align: center;
+    font-size: 18px;
 }
 
 .uiContainer {
-	padding: 1em;
-	font-size: 18px;
-	display: flex;
-	flex-wrap: wrap;
-	width: 100%;
+    padding: 1em;
+    font-size: 18px;
+    display: flex;
+    flex-wrap: wrap;
+    width: 100%;
 }
 
 .uiContainer div {
-	padding: 2px;
-	width: 100%;
+    padding: 2px;
+    width: 100%;
 }
 
-.uiContainer button, select {
-	font-size: 1rem;
-	text-align: center;
+.uiContainer button,
+select {
+    font-size: 1rem;
+    text-align: center;
 }
 
 .uiContainer input {
-	padding: 4px;
+    padding: 4px;
 }
 
 .uiContainer input:invalid {
-	background-color: ivory;
-	border: none;
-	outline: 2px solid red;
+    background-color: ivory;
+    border: none;
+    outline: 2px solid red;
 }
 
 table {
-	text-align: right;
-	border: 1px solid steelblue;
-	margin: auto;
-	margin-top: 1em;
+    text-align: right;
+    border: 1px solid steelblue;
+    margin: auto;
+    margin-top: 1em;
+}
+
+thead,
+tfoot {
+    background-color: #3f87a6;
+    color: #fff;
+}
+
+tbody {
+    background-color: #e4f0f5;
+}
+
+caption {
+    padding: 10px;
+    caption-side: bottom;
+}
+
+table {
+    border-collapse: collapse;
+    border: 2px solid rgb(200, 200, 200);
+    font-family: sans-serif;
+}
+
+td,
+th {
+    border: 1px solid rgb(190, 190, 190);
+    padding: 5px 10px;
 }
