@@ -6,12 +6,12 @@ body {
 canvas {
     image-rendering: pixelated;
     border: 1px solid steelblue;
-    margin: 0.5em;
 }
 
 .canvasContainer {
     display: flex;
     justify-content: space-between;
+    margin: 0.5em;
 }
 
 .subContainer {
@@ -48,6 +48,7 @@ select {
 
 .uiContainer input {
     padding: 4px;
+
 }
 
 .uiContainer input:invalid {
@@ -88,4 +89,10 @@ td,
 th {
     border: 1px solid rgb(190, 190, 190);
     padding: 5px 10px;
+}
+
+input[type="range"] {
+    padding: 0;
+    width: 300px;
+    margin: 0;
 }

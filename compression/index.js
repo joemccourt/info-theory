@@ -15,10 +15,13 @@ const resetState = (e) => {
     const pInput = document.getElementById('p');
     state.p = parseFloat(pInput.value, 10) ?? state.p;
     pInput.value = state.p;
+    document.getElementById('pLog').value = Math.log10(state.p);
+
 
     const nInput = document.getElementById('n');
     state.n = parseInt(nInput.value, 10) ?? state.n;
     nInput.value = state.n;
+    document.getElementById('nLog').value = Math.log10(state.n);
 
     const elS = document.getElementById('canvasSource');
     const elC = document.getElementById('canvasCompressed');
@@ -34,16 +37,16 @@ const resetState = (e) => {
     state.h = Math.ceil((state.n) / state.w);
 
     state.canvasS.width = state.w;
-    state.canvasS.style.width = `${state.w * dpr}px`;
+    state.canvasS.style.width = `${state.w * 2}px`;
 
     state.canvasD.width = state.w;
-    state.canvasD.style.width = `${state.w * dpr}px`;
+    state.canvasD.style.width = `${state.w * 2}px`;
 
     state.canvasS.height = state.h;
-    state.canvasS.style.height = `${state.h * dpr}px`;
+    state.canvasS.style.height = `${state.h * 2}px`;
 
     state.canvasD.height = state.h;
-    state.canvasD.style.height = `${state.h * dpr}px`;
+    state.canvasD.style.height = `${state.h * 2}px`;
 
     state.ctxS = elS.getContext('2d');
     state.ctxC = elC.getContext('2d');
@@ -182,15 +185,14 @@ const drawDecompressedSignal = () => {
 const drawCompressedSignal = () => {
     const { canvasC, ctxC, compressedSignal } = state;
 
-    const w = Math.ceil(Math.sqrt(compressedSignal.length));
+    const dpr = window.devicePixelRatio;
+    const w = Math.ceil(Math.min(Math.sqrt(compressedSignal.length), window.innerWidth * 0.2));
     const h = Math.ceil(compressedSignal.length / w);
 
-    const dpr = window.devicePixelRatio;
     canvasC.width = w;
     canvasC.height = h;
-    canvasC.style.width = `${w * dpr}px`;
-    canvasC.style.height = `${h * dpr}px`;
-    ctxC.scale(dpr, dpr);
+    canvasC.style.width = `${w * 2}px`;
+    canvasC.style.height = `${h * 2}px`;
 
     ctxC.fillStyle = 'black';
     ctxC.fillRect(0, 0, w, h);
@@ -258,7 +260,7 @@ const appendTable = (parentDiv) => {
 };
 
 const onRun = () => {
-    const { canvasC, ctxC, canvasD, ctxD, compressedInfo } = state;
+    const { canvasC, canvasD, ctxD, compressedInfo } = state;
 
     state.sourceSignal = genSourceSignal();
     drawSourceSignal();
@@ -313,8 +315,26 @@ const init = () => {
     const pInput = document.getElementById('p');
     pInput.addEventListener('change', () => resetState());
 
+    const pLogInput = document.getElementById('pLog');
+    pLogInput.addEventListener('input', (e) => {
+        const pLog = Math.pow(10, parseFloat(e.target.value, 10));
+        pInput.value = pLog.toPrecision(3);
+        resetState();
+    });
+
     const nInput = document.getElementById('n');
     nInput.addEventListener('change', () => resetState());
+
+    const nLogInput = document.getElementById('nLog');
+    nLogInput.addEventListener('input', (e) => {
+        const nLog = Math.pow(10, parseFloat(e.target.value, 10));
+        nInput.value = Math.ceil(nLog);
+    });
+
+    // only reset on change, not on input for n input
+    nLogInput.addEventListener('change', () => {
+        resetState();
+    });
 
     // todo add hover interactions
     // document.getElementById('canvas').addEventListener('mousemove', onMove);
