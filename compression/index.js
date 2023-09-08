@@ -1,6 +1,7 @@
 const stateDefaults = {
     p: 0.001,
     n: 50_000,
+    method: 'runlength',
 };
 
 let state = { ...stateDefaults };
@@ -12,11 +13,13 @@ const resetState = (e) => {
 
     state.compressedInfo = document.getElementById('compressedInfo');
 
+    const methodInput = document.getElementById('method');
+    state.method = methodInput.value;
+
     const pInput = document.getElementById('p');
     state.p = parseFloat(pInput.value, 10) ?? state.p;
     pInput.value = state.p;
     document.getElementById('pLog').value = Math.log10(state.p);
-
 
     const nInput = document.getElementById('n');
     state.n = parseInt(nInput.value, 10) ?? state.n;
@@ -67,6 +70,8 @@ const genSourceSignal = () => {
 };
 
 const RLE = () => {
+    const useOnes = state.method === 'runlengthone';
+
     const cMetaBlocks = [];
     state.cMetaBlocks = cMetaBlocks;
 
@@ -76,7 +81,8 @@ const RLE = () => {
     let lastOne = -1;
     for (let i = 0; i < state.n; i++) {
         const s = signal[i];
-        if (s === 1) {
+        const contiguous = useOnes ? s === 0 : s === 1;
+        if (contiguous) {
             const delta = i - lastOne;
             deltas.push(delta);
             cMetaBlocks.push({
@@ -97,8 +103,155 @@ const RLE = () => {
     return binaryEncoding;
 };
 
+const probToBin = (p) => {
+    const limit = 40;
+
+    if (p === 1) {
+        return new Array(limit).fill(1);
+    }
+
+    const asBinString = p.toString(2).substr(2);
+    const bin = new Array(limit).fill(0);
+    for (let i = 0; i < limit; i++) {
+        bin[i] = asBinString[i] === '1' ? 1 : 0;
+    }
+
+    return bin;
+};
+
+const probDeflate = () => {
+    const { sourceSignal: signal, p: prob } = state;
+
+    // arithemetic coding
+    const encoded = [];
+    let u = 0;
+    let v = 1;
+    let p = v - u;
+
+    for (let i = 0; i < signal.length + 2; i++) {
+        const sig = signal[i] ?? (i % 2 ? 0 : 1);
+        v = u + p * (sig ? 1 : (1-prob));
+        u = u + p * (sig ? (1-prob) : 0);
+        p = v - u;
+
+        // shift when starts of u and v match
+        let binU = probToBin(u);
+        let binV = probToBin(v);
+
+        let j = 0;
+        while (j < 10 && binU[j] === binV[j]) {
+            u = 2 * u - binU[j];
+            v = 2 * v - binU[j];
+            p = v - u;
+
+            encoded.push(binU[j]);
+            j++;
+        };
+    }
+
+    return encoded;
+};
+
+const probInflate = () => {
+    const { compressedSignal: signal, p: prob } = state;
+    const decoded = new Uint8Array(state.n);
+
+    let uPrev = 0;
+    let vPrev = 1;
+    let pPrev = 1;
+
+    let u = 1 - prob;
+    let v = 1;
+    let p = v - u;
+
+    let lower = 0;
+    let upper = 1;
+    let pDec = 1;
+    let i = 0;
+    let j = 0;
+    while (i < signal.length) {
+        if (signal[i]) {
+            lower += 0.5 * pDec;
+        } else {
+            upper -= 0.5 * pDec;
+        }
+        pDec *= 0.5;
+
+        // encoded is inside interval
+        while (lower >= u && upper < v) {
+            decoded[j] = 1;
+            j++;
+            if (j > state.n) { return decoded; }
+
+            uPrev = u;
+            vPrev = v;
+            pPrev = p;
+
+            // console.log('inside', u, v, lower, upper);
+            v = u + p * 1;
+            u = u + p * (1-prob);
+            p = v - u;
+            // console.log('new interval', u, v);
+        }
+
+        // outside
+        while (lower < u && upper <= u || lower > v && upper >= v) {
+            decoded[j] = 0;
+            j++;
+
+            if (j > state.n) { return decoded; }
+
+            // console.log('outside', u, v, lower, upper);
+
+            // get the reverse (0) interval
+            v = uPrev + pPrev * (1-prob);
+            u = uPrev + pPrev * 0;
+            p = v - u;
+
+            // set u,v interval to new (1) based on prev (0)
+            let uPrevTemp = u;
+            let vPrevTemp = v;
+            let pPrevTemp = p;
+            v = u + p * 1;
+            u = u + p * (1-prob);
+            p = v - u;
+
+            // console.log('new interval', u, v);
+            uPrev = uPrevTemp;
+            vPrev = vPrevTemp;
+            pPrev = pPrevTemp;
+
+        }
+
+        // precision shift
+        if (i >= 20) {
+            // console.log('shift', i)
+            // console.log(pDec, lower, upper, u, v, p, uPrev, vPrev, pPrev);
+            const toRemove = signal[i - 20];
+            lower = 2 * lower - toRemove;
+            upper = 2 * upper - toRemove;
+            pDec *= 2;
+
+            v = 2 * v - toRemove;
+            u = 2 * u - toRemove;
+            p = v - u;
+
+            vPrev = 2 * vPrev - toRemove;
+            uPrev = 2 * uPrev - toRemove;
+            pPrev = vPrev - uPrev;
+            // console.log(pDec, lower, upper, u, v, p, uPrev, vPrev, pPrev);
+        }
+
+        i++;
+    }
+
+    console.log(decoded)
+    return decoded;
+}
+
 const deRLE = () => {
     const signal = state.compressedSignal;
+    const useOnes = state.method === 'runlengthone';
 
     const deltas = [];
 
@@ -137,10 +290,14 @@ const deRLE = () => {
     const n = state.n;// decDeltas.reduce((acc, d) => acc + d, 0);
     const decompressed = new Uint8Array(n);
 
+    if (useOnes) {
+        decompressed.fill(1);
+    }
+
     let k = -1;
     for (let i = 0; i < decDeltas.length; i++) {
         k += decDeltas[i];
-        decompressed[k] = 1;
+        decompressed[k] = useOnes ? 0 : 1;
     }
 
     return decompressed;
@@ -215,7 +372,7 @@ const verifyComp = () => {
 
     for (let i = 0; i < sourceSignal.length; i++) {
         if (sourceSignal[i] !== decompressedSignal[i]) {
-            console.log(i, sourceSignal[i], decompressedSignal[i]);
+            console.log('mismatch at', i, sourceSignal[i], decompressedSignal[i]);
             return false;
         }
     }
@@ -225,6 +382,7 @@ const verifyComp = () => {
 
 const appendTable = (parentDiv) => {
     const { cMetaBlocks } = state;
+    if (!cMetaBlocks) { return; }
 
     const compressedInfoTable = document.createElement("table");
     const tableHead = document.createElement("thead");
@@ -265,10 +423,27 @@ const onRun = () => {
     state.sourceSignal = genSourceSignal();
     drawSourceSignal();
 
-    state.compressedSignal = RLE();
+    const compressionMethods = {
+        'runlength': {
+            deflate: RLE,
+            inflate: deRLE,
+        },
+        'runlengthone': {
+            deflate: RLE,
+            inflate: deRLE,
+        },
+        'prob': {
+            deflate: probDeflate,
+            inflate: probInflate,
+        }
+    };
+
+    const { inflate, deflate } = compressionMethods[state.method];
+
+    state.compressedSignal = deflate();
     drawCompressedSignal();
 
-    state.decompressedSignal = deRLE();
+    state.decompressedSignal = inflate();
     drawDecompressedSignal();
 
     compressedInfo.innerHTML = '';
@@ -277,8 +452,8 @@ const onRun = () => {
     // todo better number format
     const sourceSize = state.sourceSignal.length;
     const compSize = state.compressedSignal.length;
-    const factor = (compSize / sourceSize).toFixed(3);
-    sizeDiv.innerHTML = `${intFormat(sourceSize)} -> ${intFormat(compSize)} bits. (${factor}x)`;
+    const factor = (sourceSize / compSize ).toFixed(2);
+    sizeDiv.innerHTML = `${intFormat(sourceSize)} ⇒ ${intFormat(compSize)} bits. (${factor}x)`;
     compressedInfo.appendChild(sizeDiv);
 
     const entropyDiv = document.createElement("div");
@@ -311,6 +486,9 @@ const init = () => {
     // create events
     const runButton = document.getElementById('run');
     runButton.addEventListener('click', onRun);
+
+    const methodInput = document.getElementById('method');
+    methodInput.addEventListener('change', () => resetState());
 
     const pInput = document.getElementById('p');
     pInput.addEventListener('change', () => resetState());
